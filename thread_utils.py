@@ -63,7 +63,7 @@ class TextLoggingThread(ReusableLoopThread):
         to_text_func: return should be ended with newline
         write_func  : lambda fout, data: write_data_to_fout
     '''
-    def __init__(self, queue, to_text_func=None, write_func=None, queue_timeout=5, log_dir="log", prefix="log", postfix="", size_limit=1024*1024*1024, flush_check_interval=10):
+    def __init__(self, queue, to_text_func=None, write_func=None, queue_timeout=5, log_dir="log", prefix="log", postfix="", size_limit=1024*1024*1024, flush_check_interval=10, use_localtime=True):
         self.queue = queue
         self.to_text_func = to_text_func
         self.write_func   = write_func
@@ -74,6 +74,7 @@ class TextLoggingThread(ReusableLoopThread):
         self.size_limit=size_limit
         self.flush_check_interval=flush_check_interval
         self.lastFlushTime=time.time()
+        self.use_localtime=use_localtime
 
         self.current_fpath=None
         self.fout=None
@@ -95,7 +96,7 @@ class TextLoggingThread(ReusableLoopThread):
         try:
             if not self.fout:
                 if not self.current_fpath:
-                    fname='.'.join((self.prefix, time.strftime("%Y-%m-%d_%H-%M-%S", time.gmtime()), self.postfix, "gz"))
+                    fname='.'.join((self.prefix, time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime() if self.use_localtime else time.gmtime()), self.postfix, "gz"))
                     self.current_fpath=os.path.join(self.log_dir, fname)
                 self.fout=gzip.open(self.current_fpath, mode="at")
                 self.lastFlushTime=time.time()
