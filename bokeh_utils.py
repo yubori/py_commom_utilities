@@ -1,4 +1,5 @@
 from bokeh.plotting import curdoc
+import platform
 import signal
 
 
@@ -30,29 +31,38 @@ def update_selector(selector, options, default_value=None):
 
 
 def set_on_session_destroyed(on_session_destroyed):
+    """Register an on_destloy callback for both of bokeh and system
+
+    This func registers an on_destloy callback for both of bokeh and system.
+    For system, the callback is registered for SIGTERM, SIGINT, and SIGHUP except Windows.
+
+    Parameters
+    ----------
+    on_session_destroyed: function
+        A callback function that has no argument.
+    """
+
     curdoc().on_session_destroyed(lambda session_context: on_session_destroyed())
-
-    sig_t_handler = signal.getsignal(signal.SIGTERM)
-    sig_i_handler = signal.getsignal(signal.SIGINT)
-    sig_h_handler = signal.getsignal(signal.SIGHUP)
-
-    def is_ignore_hanlder(h):
-        return h == signal.SIG_DFL or h == signal.SIG_IGN or h is None
-
-    if is_ignore_hanlder(sig_t_handler):
-        sig_t_handler = None
-    if is_ignore_hanlder(sig_i_handler):
-        sig_i_handler = None
-    if is_ignore_hanlder(sig_h_handler):
-        sig_h_handler = None
 
     def signal_handler(s, f, dfl_handler):
         on_session_destroyed()
         if dfl_handler is not None:
             dfl_handler()
 
-    # Set signal handlers
-    signal.signal(signal.SIGTERM, lambda s, f: signal_handler(s, f, sig_t_handler))
-    signal.signal(signal.SIGINT, lambda s, f: signal_handler(s, f, sig_i_handler))
-    signal.signal(signal.SIGHUP, lambda s, f: signal_handler(s, f, sig_h_handler))
+    def is_ignore_hanlder(h):
+        return h == signal.SIG_DFL or h == signal.SIG_IGN or h is None
 
+    def set_handler(sig):
+        dfl_handler = signal.getsignal(sig)
+
+        if is_ignore_hanlder(dfl_handler):
+            dfl_handler = None
+
+        signal.signal(sig, lambda s, f: signal_handler(s, f, dfl_handler))
+
+    signals = [signal.SIGTERM, signal.SIGINT]
+    if platform.system() != 'Windows':
+        signals.append(signal.SIGHUP)
+
+    for sig in signals:
+        set_handler(sig)
