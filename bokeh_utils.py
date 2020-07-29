@@ -8,13 +8,12 @@ def is_env_bokeh():
     return curdoc().session_context != None
 
 
-def clear_bokeh_lines(lines, update=True):
-    for line in lines:
-        ds = line.data_source
-        ds.data['x'].clear()
-        ds.data['y'].clear()
-        if update:
-            ds.trigger('data', ds.data, ds.data)
+def clear_bokeh_line(line, update=True):
+    ds = line.data_source
+    ds.data['x'].clear()
+    ds.data['y'].clear()
+    if update:
+        ds.trigger('data', ds.data, ds.data)
 
 
 def update_selector(selector, options, default_value=None):
@@ -24,7 +23,7 @@ def update_selector(selector, options, default_value=None):
     if len(options) == 0:
         selector.value = ""
     else:
-        if value_backup in options and (default_value is not None and value_backup != default_value):
+        if value_backup in options and (default_value is None or value_backup != default_value):
             selector.value = value_backup
         else:
             selector.value = options[0]
@@ -66,3 +65,4 @@ def set_on_session_destroyed(on_session_destroyed):
 
     for sig in signals:
         set_handler(sig)
+
