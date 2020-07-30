@@ -4,8 +4,8 @@ import signal
 
 
 def is_env_bokeh():
-    """Determine wheather current environment is in Bokeh server"""
-    return curdoc().session_context != None
+    """Determine whether current environment is in Bokeh server"""
+    return curdoc().session_context is not None
 
 
 def clear_bokeh_line(line, update=True):
@@ -65,4 +65,3 @@ def set_on_session_destroyed(on_session_destroyed):
 
     for sig in signals:
         set_handler(sig)
-

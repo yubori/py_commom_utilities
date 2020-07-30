@@ -10,7 +10,8 @@ def get_environment():
             return 'OtherShell'
     except NameError:
         return 'Interpreter'
-    
+
+
 def is_env_notebook():
     """Determine wheather current environment is in Jupyter Notebook"""
     return get_environment() == 'Jupyter'

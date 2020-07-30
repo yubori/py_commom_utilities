@@ -1,4 +1,3 @@
-############ common utilities #############
 def check_range(val_name, val, min_, max_):
     if val < min_ or max_ < val:
         raise ValueError("Invalid '{}': range is [{},{}] but {}".format(val_name, min_, max_, val))
@@ -11,9 +10,9 @@ def resample_df(df, ix_to):
 
     Parameters
     ----------
-    df:
+    df: pandas.DataFrame
         pandas.DataFrame
-    ix_to:
+    ix_to: list, tuple
         requirement: type(ix_to) == type(df.index)
 
     Returns
@@ -23,6 +22,6 @@ def resample_df(df, ix_to):
     """
     import pandas as pd
     import numpy as np
-    ix_to = ix_to[[not b for b in np.in1d(ix_to, df.index)]]  # remove duplicated index
+    ix_to = ix_to[np.invert(np.in1d(ix_to, df.index))]  # remove duplicated index
     tmp_df = df.append(pd.DataFrame(np.repeat(np.NaN, len(ix_to)), index=ix_to))
     return tmp_df.sort_index().interpolate('index').loc[ix_to]

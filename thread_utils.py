@@ -6,13 +6,12 @@ import queue
 import warnings
 
 
-############ thread utilities #############
 class StopLoop(Exception):
-    'Exception raised from in_loop_func when stop_flag of ReusableLoopThread is on.'
+    """Exception raised from in_loop_func when stop_flag of ReusableLoopThread is on."""
     pass
 
 
-class ReusableLoopThread():
+class ReusableLoopThread:
     def __init__(self, in_loop_func, before_loop_func=None, after_loop_func=None):
         self.__stop_flag = False
         self.__thread = None
@@ -62,10 +61,10 @@ class ReusableLoopThread():
 
 
 class TextLoggingThread(ReusableLoopThread):
-    '''
+    """
         to_text_func: return should be ended with newline
         write_func  : lambda fout, data: write_data_to_fout
-    '''
+    """
 
     def __init__(self, queue, to_text_func=None, write_func=None, queue_timeout=5, log_dir="log", prefix="log",
                  postfix="", size_limit=1024 * 1024 * 1024, flush_check_interval=10, use_localtime=True):
@@ -101,9 +100,11 @@ class TextLoggingThread(ReusableLoopThread):
         try:
             if not self.fout:
                 if not self.current_fpath:
-                    fname = '.'.join((self.prefix, time.strftime("%Y-%m-%d_%H-%M-%S",
-                                                                 time.localtime() if self.use_localtime else time.gmtime()),
-                                      self.postfix, "gz"))
+                    fname = '.'.join((self.prefix
+                                      , time.strftime("%Y-%m-%d_%H-%M-%S"
+                                                      , time.localtime() if self.use_localtime else time.gmtime())
+                                      , self.postfix
+                                      , "gz"))
                     self.current_fpath = os.path.join(self.log_dir, fname)
                 self.fout = gzip.open(self.current_fpath, mode="at")
                 self.lastFlushTime = time.time()
@@ -114,19 +115,20 @@ class TextLoggingThread(ReusableLoopThread):
             if self.write_func is not None:
                 self.write_func(self.fout, data)
             else:
-                l = len(data)
+                data_len = len(data)
                 written_l = 0
-                while (written_l < l):
+                while written_l < data_len:
                     written_l += self.fout.write(data[written_l:])
 
-            if (time.time() - self.lastFlushTime > self.flush_check_interval):  # check flush
+            if time.time() - self.lastFlushTime > self.flush_check_interval:  # check flush
                 self.fout.flush()
-                if (os.path.getsize(self.current_fpath) > self.size_limit):
+                if os.path.getsize(self.current_fpath) > self.size_limit:
                     self.fout.close()
                     self.fout = None
                     self.current_fpath = None
 
             self.backupData = None
+
         except OSError as e:
             warnings.warn('Error occurs during logging. retry forever\n  errno: [%d] msg: [%s]' % (e.errno, e.strerror))
             try:
