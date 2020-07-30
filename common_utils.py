@@ -22,6 +22,6 @@ def resample_df(df, ix_to):
     """
     import pandas as pd
     import numpy as np
-    ix_to = ix_to[np.invert(np.in1d(ix_to, df.index))]  # remove duplicated index
-    tmp_df = df.append(pd.DataFrame(np.repeat(np.NaN, len(ix_to)), index=ix_to))
+    new_ix = ix_to[np.invert(np.in1d(ix_to, df.index))]  # remove duplicated index
+    tmp_df = df.append(pd.DataFrame(np.repeat(np.NaN, len(new_ix)), index=new_ix))
     return tmp_df.sort_index().interpolate('index').loc[ix_to]
