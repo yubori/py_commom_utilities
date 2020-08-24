@@ -57,7 +57,10 @@ def set_on_session_destroyed(on_session_destroyed):
         if is_ignore_hanlder(dfl_handler):
             dfl_handler = None
 
-        signal.signal(sig, lambda s, f: signal_handler(s, f, dfl_handler))
+        if sig == signal.SIG_DFL or sig == signal.SIG_IGN:
+            signal.signal(sig, lambda s: signal_handler(s, None, dfl_handler))
+        else:
+            signal.signal(sig, lambda s, f: signal_handler(s, f, dfl_handler))
 
     signals = [signal.SIGTERM, signal.SIGINT]
     if platform.system() != 'Windows':

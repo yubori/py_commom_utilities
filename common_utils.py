@@ -25,3 +25,14 @@ def resample_df(df, ix_to):
     new_ix = ix_to[np.invert(np.in1d(ix_to, df.index))]  # remove duplicated index
     tmp_df = df.append(pd.DataFrame(np.repeat(np.NaN, len(new_ix)), index=new_ix))
     return tmp_df.sort_index().interpolate('index').loc[ix_to]
+
+
+def set_jp_locale():
+    import platform
+    import locale
+    jp_locale_str = 'ja_JP.UTF-8'
+    if platform.system() == 'Windows':
+        jp_locale_str = 'Japanese_Japan.932'
+
+    locale.setlocale(locale.LC_TIME, f'{jp_locale_str}')
+
