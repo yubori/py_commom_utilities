@@ -41,12 +41,15 @@ def set_on_session_destroyed(on_session_destroyed):
         A callback function that has no argument.
     """
 
-    curdoc().on_session_destroyed(lambda session_context: on_session_destroyed())
-
-    def signal_handler(s, f, dfl_handler):
+    def signal_handler_1(s, dfl_handler):
         on_session_destroyed()
         if dfl_handler is not None:
-            dfl_handler()
+            dfl_handler(s)
+
+    def signal_handler_2(s, f, dfl_handler):
+        on_session_destroyed()
+        if dfl_handler is not None:
+            dfl_handler(s, f)
 
     def is_ignore_hanlder(h):
         return h == signal.SIG_DFL or h == signal.SIG_IGN or h is None
@@ -58,9 +61,9 @@ def set_on_session_destroyed(on_session_destroyed):
             dfl_handler = None
 
         if sig == signal.SIG_DFL or sig == signal.SIG_IGN:
-            signal.signal(sig, lambda s: signal_handler(s, None, dfl_handler))
+            signal.signal(sig, lambda s: signal_handler_1(s, dfl_handler))
         else:
-            signal.signal(sig, lambda s, f: signal_handler(s, f, dfl_handler))
+            signal.signal(sig, lambda s, f: signal_handler_2(s, f, dfl_handler))
 
     signals = [signal.SIGTERM, signal.SIGINT]
     if platform.system() != 'Windows':
@@ -68,3 +71,6 @@ def set_on_session_destroyed(on_session_destroyed):
 
     for sig in signals:
         set_handler(sig)
+
+    curdoc().on_session_destroyed(lambda session_context: on_session_destroyed())
+
